@@ -10,12 +10,15 @@ import (
 
 // Server serves one or more Detectors.  The first one whose Test function
 // returns true wins.
-type Server struct {
-	Detectors []Detector
+type Server []Detector
+
+// NewServer creates a new Server from a variadic list of Detectors.
+func NewServer(detectors ...Detector) Server {
+	return Server(detectors)
 }
 
 // ListenAndServe opens a listening TCP socket, and calls Serve on it.
-func (srv *Server) ListenAndServe(hostPort string) error {
+func (srv Server) ListenAndServe(hostPort string) error {
 	ln, err := net.Listen("tcp", hostPort)
 	if err != nil {
 		return err
@@ -24,7 +27,7 @@ func (srv *Server) ListenAndServe(hostPort string) error {
 }
 
 // Serve runs a handling loop on a listening socket.
-func (srv *Server) Serve(ln net.Listener) error {
+func (srv Server) Serve(ln net.Listener) error {
 	// TODO: afford start-able handlers?  Currently the requirement is that any
 	// such need is met lazily/on-demand as connBufShim does.
 	defer srv.closeDetectors()
@@ -55,20 +58,20 @@ func (srv *Server) Serve(ln net.Listener) error {
 	}
 }
 
-func (srv *Server) closeDetectors() {
-	for _, det := range srv.Detectors {
+func (srv Server) closeDetectors() {
+	for _, det := range srv {
 		if closer, ok := det.Handler.(io.Closer); ok {
 			closer.Close() // TODO: do we care about err?
 		}
 	}
 }
 
-func (srv *Server) handleConnection(conn net.Conn) {
+func (srv Server) handleConnection(conn net.Conn) {
 	// TODO: suspect could do better in slow case where we don't have any
 	// initial bytes yet... bufr doesn't seem to have a mechanism to wait for X
 	// bytes to be available, that then lets us give them all back
 	size := 512
-	for _, det := range srv.Detectors {
+	for _, det := range srv {
 		if det.Needed > size {
 			size = det.Needed
 		}
@@ -76,8 +79,8 @@ func (srv *Server) handleConnection(conn net.Conn) {
 	bufr := bufio.NewReaderSize(conn, size)
 	i := 0
 	for k := 0; k < 10; k++ {
-		for ; i < len(srv.Detectors); i++ {
-			det := srv.Detectors[i]
+		for ; i < len(srv); i++ {
+			det := srv[i]
 			if b, _ := bufr.Peek(det.Needed); len(b) < det.Needed {
 				break
 			} else if det.Test(b) {
