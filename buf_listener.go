@@ -3,6 +3,7 @@ package stacked
 import (
 	"errors"
 	"net"
+	"sync/atomic"
 )
 
 var errBufListenerClosed = errors.New("bufListener closed")
@@ -10,26 +11,27 @@ var errBufListenerClosed = errors.New("bufListener closed")
 // bufListener implements net.Listener around a chan *bufConn.
 type bufListener struct {
 	addr   net.Addr
-	inc    chan *bufConn
-	closed bool
+	conns  chan *bufConn
+	closed uint64
 }
 
 // Accept waits for and returns the next connection to the listener.
 func (bl *bufListener) Accept() (net.Conn, error) {
-	if bl.closed {
+	if bl.closed != 0 {
 		return nil, errBufListenerClosed
 	}
-	if conn := <-bl.inc; conn != nil {
+	if conn := <-bl.conns; conn != nil {
 		return conn, nil
 	}
-	bl.closed = true
 	return nil, errBufListenerClosed
 }
 
 // Close closes the listener.
 func (bl *bufListener) Close() error {
-	bl.closed = true
-	// TODO: interrupt / unblock any blocked accept operations
+	if !atomic.CompareAndSwapUint64(&bl.closed, 0, 1) {
+		return nil
+	}
+	close(bl.conns)
 	return nil
 }
 
