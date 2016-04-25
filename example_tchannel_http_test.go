@@ -92,7 +92,7 @@ func isTChannelInitFrame(b []byte) bool {
 
 // Example_tchannelAndHTTP shows how to host both tchannel and http on a single port
 func Example_tchannelAndHTTP() {
-	log.Fatal(stacked.NewServer(
+	log.Fatal(stacked.ListenAndServe(":4040",
 		stacked.Detector{
 			Needed: 20,
 			Test:   isTChannelInitFrame,
@@ -105,5 +105,5 @@ func Example_tchannelAndHTTP() {
 			}),
 		}, // will serve marked protocol first if initial bytes "look like a note"
 		stacked.DefaultHTTPHandler(nil), // otherwise will serve default HTTP
-	).ListenAndServe(":4040"))
+	))
 }

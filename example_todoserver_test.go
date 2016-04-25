@@ -119,10 +119,10 @@ func exampleListenAndServe(hostPort string) {
 
 	httpDetector := stacked.DefaultHTTPHandler(http.HandlerFunc(handleHTTP))
 
-	log.Fatal(stacked.NewServer(
+	log.Fatal(stacked.ListenAndServe(hostPort,
 		markedDetector, // will serve marked protocol first if initial bytes "look like a note"
 		httpDetector,   // otherwise will serve classic HTTP
-	).ListenAndServe(hostPort))
+	))
 }
 
 // Example_todoserver implements a dual-protocol TODO notes server.

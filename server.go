@@ -12,6 +12,12 @@ import (
 // returns true wins.
 type Server []Detector
 
+// ListenAndServe creates a server for the passed detectors, and has it listend
+// and serve.
+func ListenAndServe(hostPort string, detectors ...Detector) error {
+	return NewServer(detectors...).ListenAndServe(hostPort)
+}
+
 // NewServer creates a new Server from a variadic list of Detectors.
 func NewServer(detectors ...Detector) Server {
 	return Server(detectors)
