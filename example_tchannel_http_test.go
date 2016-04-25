@@ -1,11 +1,11 @@
 package stacked_test
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/binary"
 	"log"
-	"net"
+
+	"github.com/uber/tchannel-go"
 
 	"github.com/uber-common/stacked"
 )
@@ -92,17 +92,16 @@ func isTChannelInitFrame(b []byte) bool {
 
 // Example_tchannelAndHTTP shows how to host both tchannel and http on a single port
 func Example_tchannelAndHTTP() {
+	ch, err := tchannel.NewChannel("foo", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	log.Fatal(stacked.ListenAndServe(":4040",
 		stacked.Detector{
-			Needed: 20,
-			Test:   isTChannelInitFrame,
-			// TODO: currently we just close the connection, since tchannel-go
-			// integration is unclear (it doesn't seem to export a ListenServer
-			// implementation).
-			Handler: stacked.HandlerFunc(func(conn net.Conn, bufr *bufio.Reader) {
-				log.Printf("no tchannel for you!")
-				conn.Close()
-			}),
+			Needed:  20,
+			Test:    isTChannelInitFrame,
+			Handler: stacked.ListenServerHandler(ch),
 		}, // will serve tchannel protocol first if we get what looks like a valid init frame
 		stacked.DefaultHTTPHandler(nil), // otherwise will serve default HTTP
 	))
