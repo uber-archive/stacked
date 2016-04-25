@@ -12,14 +12,6 @@ import (
 	"github.com/uber-common/stacked"
 )
 
-func prefixDetector(p string, handler stacked.Handler) stacked.Detector {
-	return stacked.Detector{
-		Needed:  len([]byte(p)),
-		Test:    func(b []byte) bool { return string(b) == prefix },
-		Handler: handler,
-	}
-}
-
 func isTChannelInitFrame(b []byte) bool {
 	buf := bytes.NewBuffer(b)
 
@@ -118,11 +110,11 @@ func Example_tchannelAndHTTP() {
 		// detect prior-knowledge HTTP/2 connection... deny for now (this is
 		// only for example, and is actually counterproductive since net/http
 		// (the next handler below) will handle this fine in 1.6
-		prefixDetector(
+		stacked.PrefixDetector(
 			"PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n",
 			stacked.HandlerFunc(func(conn net.Conn, bufr *bufio.Reader) {
 				log.Printf("no HTTP/2 for you!")
-				conn.close()
+				conn.Close()
 			})),
 
 		// otherwise will serve default HTTP
