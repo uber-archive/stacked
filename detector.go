@@ -1,6 +1,8 @@
 package stacked
 
-import "net/http"
+import (
+	"net/http"
+)
 
 // Detector is a Handler along with a detection function and how
 // many bytes it needs to decide.
@@ -33,5 +35,30 @@ func FallthroughDetector(hndl Handler) Detector {
 		Needed:  0,
 		Test:    func([]byte) bool { return true },
 		Handler: hndl,
+	}
+}
+
+// PrefixDetector detects a static string prefix.
+func PrefixDetector(prefix string, handler Handler) Detector {
+	return Detector{
+		Needed:  len([]byte(prefix)),
+		Test:    func(b []byte) bool { return string(b) == prefix },
+		Handler: handler,
+	}
+}
+
+// PrefixBytesDetector detects a static string prefix.
+func PrefixBytesDetector(prefix []byte, handler Handler) Detector {
+	return Detector{
+		Needed: len(prefix),
+		Test: func(b []byte) bool {
+			for i, v := range prefix {
+				if b[i] != v {
+					return false
+				}
+			}
+			return true
+		},
+		Handler: handler,
 	}
 }
