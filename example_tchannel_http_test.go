@@ -103,7 +103,7 @@ func Example_tchannelAndHTTP() {
 				log.Printf("no tchannel for you!")
 				conn.Close()
 			}),
-		}, // will serve marked protocol first if initial bytes "look like a note"
+		}, // will serve tchannel protocol first if we get what looks like a valid init frame
 		stacked.DefaultHTTPHandler(nil), // otherwise will serve default HTTP
 	))
 }
