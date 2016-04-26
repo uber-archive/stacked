@@ -15,6 +15,13 @@ type bufListener struct {
 	closed uint64
 }
 
+func newBufListener(addr net.Addr) *bufListener {
+	return &bufListener{
+		addr:  addr,
+		conns: make(chan *bufConn),
+	}
+}
+
 // Accept waits for and returns the next connection to the listener.
 func (bl *bufListener) Accept() (net.Conn, error) {
 	if bl.closed != 0 {

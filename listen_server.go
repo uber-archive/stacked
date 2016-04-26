@@ -41,10 +41,7 @@ func (cbs *connBufShim) lnFor(conn net.Conn) *bufListener {
 	if ln := cbs.listeners[addr]; ln != nil {
 		return ln
 	}
-	ln := &bufListener{
-		addr:  addr,
-		conns: make(chan *bufConn),
-	}
+	ln := newBufListener(addr)
 	cbs.listeners[addr] = ln
 	go func() {
 		if err := cbs.Server.Serve(ln); err != nil {
