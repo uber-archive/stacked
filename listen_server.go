@@ -25,10 +25,8 @@ type connBufShim struct {
 // ServeConnection simply puts a new bufConn onto bufConns for distribution by
 // bufLn.Accept.
 func (cbs *connBufShim) ServeConnection(conn net.Conn, bufr *bufio.Reader) {
-
-	ln := cbs.lnFor(conn)
-
-	ln.conns <- &bufConn{conn, bufr}
+	conn = &bufConn{conn, bufr}
+	cbs.lnFor(conn).conns <- &bufConn{conn, bufr}
 }
 
 // lnFor gets or creates the bufListener for connection (one-per

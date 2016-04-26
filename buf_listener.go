@@ -11,7 +11,7 @@ var errBufListenerClosed = errors.New("bufListener closed")
 // bufListener implements net.Listener around a chan *bufConn.
 type bufListener struct {
 	addr   net.Addr
-	conns  chan *bufConn
+	conns  chan net.Conn
 	closed uint64
 }
 
