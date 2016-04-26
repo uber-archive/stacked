@@ -25,7 +25,6 @@ func isTChannelInitFrame(b []byte) bool {
 
 	// size:2
 	if err := binary.Read(buf, binary.BigEndian, &frameSize); err != nil {
-		log.Printf("no frameSize: %v", err)
 		return false
 	}
 	if frameSize < 20 {
@@ -36,7 +35,6 @@ func isTChannelInitFrame(b []byte) bool {
 
 	// type:1
 	if err := binary.Read(buf, binary.BigEndian, &frameType); err != nil {
-		log.Printf("no frameType: %v", err)
 		return false
 	}
 	if frameType != 0x01 { // init req
@@ -50,7 +48,6 @@ func isTChannelInitFrame(b []byte) bool {
 
 	// id:4
 	if err := binary.Read(buf, binary.BigEndian, &frameID); err != nil {
-		log.Printf("no frameID: %v", err)
 		return false
 	}
 	// TODO: should we be able to assert that id is 0 or 1... or at least bound
@@ -63,7 +60,6 @@ func isTChannelInitFrame(b []byte) bool {
 
 	// version:2
 	if err := binary.Read(buf, binary.BigEndian, &tchanVersion); err != nil {
-		log.Printf("no tchanVersion: %v", err)
 		return false
 	}
 	// TODO: is this too restrictive? surely we can at least say something like <256...
@@ -73,7 +69,6 @@ func isTChannelInitFrame(b []byte) bool {
 
 	// nh:2
 	if err := binary.Read(buf, binary.BigEndian, &numHeaders); err != nil {
-		log.Printf("no numHeaders: %v", err)
 		return false
 	}
 	if numHeaders == 0 && frameSize != 20 {
