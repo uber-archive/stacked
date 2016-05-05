@@ -7,3 +7,7 @@ handler.
 
 A convenience layer is provided for integrating net.Listener oriented servers,
 such as net/http.
+
+# Documentation
+
+See the [godoc](https://godoc.org/github.com/uber-common/stacked).
